@@ -39,7 +39,7 @@ function seatGeometry() {
   const base = new THREE.BoxGeometry(0.46, 0.08, 0.42); base.translate(0, 0.42, 0.02);
   const back = new THREE.BoxGeometry(0.46, 0.46, 0.06); back.translate(0, 0.66, -0.2);
   const leg = new THREE.BoxGeometry(0.08, 0.4, 0.3); leg.translate(0, 0.2, 0);
-  return mergeGeometries([base, back, leg]);
+  return mergeGeometries([base, back]);
 }
 
 // Lofts a closed rounded-rect profile: points [{d, y}] become a solid shell.
@@ -306,6 +306,7 @@ export function buildStadium() {
     panels, opacity: 1, targetOpacity: 1, closed: false,
     setClosed(v) { this.closed = v; },
     update(dt) {
+      const before = panels[0].position.x + this.opacity;
       const k = 1 - Math.exp(-dt * 2.2);
       panels.forEach(p => { p.position.x += ((this.closed ? p.userData.closed : p.userData.open) - p.position.x) * k; });
       this.opacity += (this.targetOpacity - this.opacity) * (1 - Math.exp(-dt * 4));
@@ -314,6 +315,7 @@ export function buildStadium() {
       roofRing.visible = ribs.visible = o > 0.02;
       roofRing.castShadow = o > 0.5;
       panels.forEach(p => { p.visible = o > 0.02; p.castShadow = o > 0.5; });
+      return Math.abs(panels[0].position.x + this.opacity - before) > 0.05;
     },
   };
 

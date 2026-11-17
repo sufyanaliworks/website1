@@ -16,13 +16,14 @@ const step = async (pct) => { loadbar.style.width = pct + '%'; await new Promise
 // Renderer, scene, camera
 // ---------------------------------------------------------------------------
 const container = $('#scene');
-const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+const renderer = new THREE.WebGLRenderer({ antialias: devicePixelRatio < 1.5, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 0.55;
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.shadowMap.autoUpdate = false; // static world: shadows rendered once, refreshed on roof/day changes
 container.appendChild(renderer.domElement);
 
 const labelRenderer = new CSS2DRenderer();
@@ -31,7 +32,7 @@ Object.assign(labelRenderer.domElement.style, { position: 'absolute', inset: '0'
 container.appendChild(labelRenderer.domElement);
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.3, 30000);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 1, 20000);
 camera.position.set(2600, 1600, 2800);
 
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -56,7 +57,7 @@ skyU.mieDirectionalG.value = 0.8;
 
 const sun = new THREE.DirectionalLight(0xfff1dc, 3.2);
 sun.castShadow = true;
-sun.shadow.mapSize.set(4096, 4096);
+sun.shadow.mapSize.set(2048, 2048);
 const sc = sun.shadow.camera;
 sc.left = -1300; sc.right = 1300; sc.top = 1300; sc.bottom = -1300; sc.near = 10; sc.far = 4000;
 sun.shadow.bias = -0.0004;
@@ -621,10 +622,12 @@ function frame() {
   updateFlight(dt);
   updateDrone(dt);
   if (!flight) controls.update();
-  stadium.roof.update(dt);
+  if (stadium.roof.update(dt)) renderer.shadowMap.needsUpdate = true;
   district.updateTraffic(dt);
-  if (Math.abs(night - nightTarget) > 0.001) { night += (nightTarget - night) * (1 - Math.exp(-dt * 1.6)); if (Math.abs(night - nightTarget) < 0.002) night = nightTarget; applyDayNight(); }
+  if (Math.abs(night - nightTarget) > 0.001) { night += (nightTarget - night) * (1 - Math.exp(-dt * 1.6)); if (Math.abs(night - nightTarget) < 0.002) night = nightTarget; applyDayNight(); renderer.shadowMap.needsUpdate = true; }
   processHover();
+  const nn = clamp(camera.position.y * 0.04, 0.3, 25); // adaptive near plane keeps depth precise without a log depth buffer
+  if (Math.abs(nn - camera.near) > 0.05) { camera.near = nn; camera.updateProjectionMatrix(); }
   if (underground !== lastUG) { lastUG = underground; updateLabels(); }
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
@@ -643,6 +646,7 @@ addEventListener('resize', () => {
   defineShots();
   buildSeatPanel();
   applyDayNight();
+  renderer.shadowMap.needsUpdate = true;
   controls.target.set(0, 0, -150);
   mode = 'overview';
   renderInfo();
@@ -652,5 +656,5 @@ addEventListener('resize', () => {
     $('#loader').classList.add('done');
     flyTo(VIEWS.overview.shot().pos, VIEWS.overview.shot().target, 4.5);
   }, 300);
-  window.__app = { frame, snap(m, sub) { flight = null; if (m) goTo(m); const sh = sub ? sub() : VIEWS[mode].shot(); if (flight) flight = null; underground = !!sh.underground; insideNow = !!sh.inside; camera.position.copy(sh.pos); controls.target.copy(sh.target); controls.enabled = true; controls.update(); updateLabels(); }, shots: () => ({ mosqueShots, roomShots, stadium: VIEWS.stadium.shots }), scene, camera, controls, goTo, shot, stadium, mosque, district, selected, toggleSeat, setNight: v => { nightTarget = v; }, forceNight() { night = nightTarget = 1; applyDayNight(); }, get flight() { return flight; } };
+  window.__app = { frame, snap(m, sub) { flight = null; if (m) goTo(m); const sh = sub ? sub() : VIEWS[mode].shot(); if (flight) flight = null; underground = !!sh.underground; insideNow = !!sh.inside; camera.position.copy(sh.pos); controls.target.copy(sh.target); controls.enabled = true; controls.update(); updateLabels(); }, shots: () => ({ mosqueShots, roomShots, stadium: VIEWS.stadium.shots }), scene, camera, controls, goTo, shot, stadium, mosque, district, selected, toggleSeat, setNight: v => { nightTarget = v; }, forceNight() { night = nightTarget = 1; applyDayNight(); renderer.shadowMap.needsUpdate = true; }, get flight() { return flight; } };
 })();

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Al Yasmeen Stadium · Ajman</title>
+  <meta name="description" content="Explore the Al Yasmeen Stadium district in Ajman, UAE in 3D: a 60,000+ seat football stadium with drone seat selection, a grand mosque, a big park, 100,000+ parking spaces and highway links." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Amiri:wght@700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script type="importmap">
+  { "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
+  </script>
+</head>
+<body>
+  <div id="scene"></div>
+  <div id="fade"></div>
+
+  <!-- Loader -->
+  <div id="loader">
+    <div class="loader-inner">
+      <div class="ar">ملعب الياسمين</div>
+      <h1>AL YASMEEN STADIUM</h1>
+      <p>Building the district in 3D…</p>
+      <div class="bar"><span id="loadbar"></span></div>
+    </div>
+  </div>
+
+  <!-- Top bar -->
+  <header id="topbar">
+    <div class="brand">
+      <span class="logo">◆</span>
+      <div>
+        <strong>Al Yasmeen</strong>
+        <small>Ajman · UAE</small>
+      </div>
+    </div>
+    <nav id="nav">
+      <button data-go="overview" class="active">Overview</button>
+      <button data-go="stadium">Stadium</button>
+      <button data-go="seats" class="hot">Seats &amp; Tickets</button>
+      <button data-go="changing">Changing Rooms</button>
+      <button data-go="mosque">Grand Mosque</button>
+      <button data-go="park">Park</button>
+      <button data-go="parking">Parking</button>
+      <button data-go="roads">Highways</button>
+    </nav>
+    <div class="tools">
+      <button id="btnTour" title="Automatic drone tour">▶ Drone tour</button>
+      <button id="btnDay" title="Toggle day / night">☾ Night</button>
+    </div>
+  </header>
+
+  <!-- Info card for each area -->
+  <aside id="info" class="glass">
+    <div id="infoBody"></div>
+  </aside>
+
+  <!-- Seat selection panel -->
+  <aside id="seatPanel" class="glass hidden">
+    <div class="sp-head">
+      <h2>Pick your seats</h2>
+      <p>Drone over the bowl, hover a seat to see its price, click to select it.</p>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div class="seat-card" id="seatCard">
+      <div class="muted">No seat under the cursor yet.</div>
+    </div>
+    <div class="basket">
+      <div class="basket-head"><strong>Your seats</strong><span id="basketCount">0</span></div>
+      <ul id="basketList"></ul>
+      <div class="total"><span>Total</span><strong id="basketTotal">AED 0</strong></div>
+      <div class="row-btns">
+        <button id="btnSeatView" disabled>👁 View from seat</button>
+        <button id="btnClear" disabled>Clear</button>
+      </div>
+      <button id="btnCheckout" class="primary" disabled>Reserve seats</button>
+    </div>
+    <div class="sections">
+      <strong>Drone to a section</strong>
+      <div id="sectionJump"></div>
+    </div>
+  </aside>
+
+  <div id="tooltip" class="hidden"></div>
+
+  <!-- Bottom controls -->
+  <div id="hud">
+    <div class="hud-group">
+      <button id="btnRoof">Close roof</button>
+      <button id="btnLabels">Labels: on</button>
+    </div>
+    <div class="hint" id="hint">Drag to orbit · Right-drag to pan · Scroll to zoom · <b>W A S D</b> fly · <b>Q / E</b> up &amp; down</div>
+  </div>
+
+  <div id="modal" class="hidden">
+    <div class="glass modal-box">
+      <h2>Seats reserved ✔</h2>
+      <div id="modalBody"></div>
+      <button id="modalClose" class="primary">Done</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
